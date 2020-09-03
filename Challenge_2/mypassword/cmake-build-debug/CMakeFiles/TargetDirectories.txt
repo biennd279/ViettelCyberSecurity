@@ -1,0 +1,4 @@
+/home/bien/ViettelCyberSecurity/Challenge_2/mypassword/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/bien/ViettelCyberSecurity/Challenge_2/mypassword/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/bien/ViettelCyberSecurity/Challenge_2/mypassword/cmake-build-debug/CMakeFiles/checkpasswd.dir
+/home/bien/ViettelCyberSecurity/Challenge_2/mypassword/cmake-build-debug/CMakeFiles/mypasswd.dir

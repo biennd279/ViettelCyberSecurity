@@ -1,0 +1,1 @@
+/usr/bin/c++   -lcrypt -g   CMakeFiles/mypasswd.dir/main.cpp.o  -o mypasswd  -lcrypt
