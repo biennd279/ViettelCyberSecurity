@@ -1,45 +1,41 @@
-import socket as sk
-from urllib.parse import urlparse
-from tcplib import parseTCPMsg
+import argparse
 import re
+from urllib.parse import urlparse
+
+from tcplib import createSocket
+from tcplib import parseTcpMsg
+from tcplib import sendTcpMsg
 
 
 def getFileContent(uri: str):
     file = open(uri, "r+b")
+    file_name = uri.split("/")[-1]
     content = file.read()
     file.close()
-    return content
+    return file_name, content
 
 
 def getPostLogin(url: str, user: str, password: str):
     url = urlparse(url)
 
-    sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    sock.connect((url.hostname, url.port or 80))
+    sock = createSocket(url.hostname, url.port or 80)
 
-    body = "log={user}&pwd={password}&testcookie=1" \
+    body = "log={user}&pwd={password}" \
         .format(user=user, password=password)
 
-    msg = 'POST {path} HTTP/1.1\r\n' \
-          'Host: {host}\r\n' \
-          'Content-Length: {content_length}\r\n' \
-          'Content-Type: application/x-www-form-urlencoded\r\n' \
-          'Cookie: wordpress_test_cookie=WP+Cookie+check\r\n' \
-          'Connection: close\r\n' \
-          '\r\n' \
-          '{body}' \
-        .format(path=url.path,
-                host=url.netloc,
-                content_length=len(body),
-                body=body)
+    msg = "POST {path} HTTP/1.1\r\n" \
+          "Host: {host}\r\n" \
+          "Content-Length: {content_length}\r\n" \
+          "Content-Type: application/x-www-form-urlencoded\r\n" \
+          "Cookie: wordpress_test_cookie=WP+Cookie+check\r\n" \
+          "Connection: close\r\n" \
+          "\r\n" \
+          "{body}".format(path=url.path,
+                          host=url.netloc,
+                          content_length=len(body),
+                          body=body)
 
-    sock.sendall(msg.encode())
-    response = b""
-    while True:
-        chunk = sock.recv(4096)
-        if not chunk:
-            break
-        response += chunk
+    response = sendTcpMsg(sock, msg.encode())
 
     sock.close()
     return response
@@ -47,18 +43,18 @@ def getPostLogin(url: str, user: str, password: str):
 
 def getCookies(url: str, user: str, password: str):
     response = getPostLogin(url, user, password).decode()
-    header, body = parseTCPMsg(response)
+    header, body = parseTcpMsg(response)
 
-    cookiesRegex = r"Set-Cookie: (.+?; )"
-    cookies = set(re.findall(cookiesRegex, header))
+    cookies_regex = r"Set-Cookie: (.+?; )"
+    cookies = set(re.findall(cookies_regex, header))
 
     return ''.join(cookies)[0:-2]
 
-def getWpnonce(url: str, cookie:str):
+
+def getWpnonce(url: str, cookie: str):
     url = urlparse(url)
 
-    sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    sock.connect((url.hostname, url.port or 80))
+    sock = createSocket(url.hostname, url.port or 80)
 
     msg = "GET /wp-admin/media-new.php HTTP/1.1\r\n" \
           "Host: {host}\r\n" \
@@ -67,92 +63,106 @@ def getWpnonce(url: str, cookie:str):
           "\r\n".format(host=url.netloc,
                         cookie=cookie)
 
-    sock.sendall(msg.encode())
-    response = b""
-    while True:
-        chunk = sock.recv(4096)
-        if not chunk:
-            break
-        response += chunk
+    response = sendTcpMsg(sock, msg.encode())
 
     sock.close()
 
-    header, body = parseTCPMsg(response.decode())
+    header, body = parseTcpMsg(response.decode())
 
     json = re.search(r"\"post_id\":0,\"_wpnonce\":\"([\w\d]+)\",\"type\":\"\",\"tab\":\"\",\"short\":\"1\"", body)
 
     return json.group(1)
 
-
-def uploadFile(url: str, user: str, password: str, uri: str):
-    fileContent = getFileContent(uri)
-
-    cookies = getCookies("http://45.32.110.240/wp-login.php", "test", "test123QWE@AD")
-
-    _wpnoce = getWpnonce("http://45.32.110.240/wp-admin/media-new.php", cookies)
-
-    # cookies = "wordpress_2dee28ae052fe27155f70bc8d3ceb583=test%7C1599939377%7CfCIkZI8RLFcUDgzytLhlHknIo0dtWbpjwLINGycFa3v%7Cf4ea102fd750c3c5b004f7b826fe1184f0b57bc1f16037434a8cfac5173d5b42; wordpress_test_cookie=WP+Cookie+check; wordpress_logged_in_2dee28ae052fe27155f70bc8d3ceb583=test%7C1599939377%7CfCIkZI8RLFcUDgzytLhlHknIo0dtWbpjwLINGycFa3v%7C1e0b7696b9e9cd39fa7e83181ca233e90f99fa5a41f756a443899ad3a4076fd2;"
-    boundary = b"----WebKitFormBoundaryh3d42A0ad5Vv4VxY"
-
-
-    body = b"--%s\r\n" \
-           b"Content-Disposition: form-data; name=\"name\"\r\n" \
-           b"\r\n" \
-           b"test.png\r\n" \
-           b"--%s\r\n" \
-           b"Content-Disposition: form-data; name=\"_wpnonce\"\r\n" \
-           b"\r\n" \
-           b"%s\r\n" \
-           b"--%s\r\n" \
-           b"Content-Disposition: form-data; name=\"async-upload\"; filename=\"test.png\"\r\n" \
-           b"Content-Type: image/png\r\n" \
-           b"\r\n" \
-           b"%s\r\n" \
-           b"--%s\r\n" \
-           b"" % (boundary,
-                  boundary,
-                  _wpnoce.encode(),
-                  boundary,
-                  fileContent,
-                  boundary)
-
-    msg = b"POST /wp-admin/async-upload.php HTTP/1.1\r\n" \
-          b"Host: 45.32.110.240\r\n" \
-          b"Content-Length: %s\r\n" \
-          b"Content-Type: multipart/form-data; boundary=%s\r\n" \
-          b"Cookie: %s\r\n" \
-          b"Connection: close\r\n" \
-          b"\r\n" \
-          b"%s" % (len(body).__str__().encode(),
-                   boundary,
-                   cookies.encode(),
-                   body)
-
-    file = open("msg1.txt", "w+b")
-    file.write(msg)
-    file.close()
-
-    print(msg)
-
+def getFileUploadUrl(id:int, url:str, cookies:str):
     url = urlparse(url)
 
-    sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    sock.connect((url.hostname, url.port or 80))
+    socket = createSocket(url.hostname,url.port or 80)
 
-    sock.sendall(msg)
+    msg = "GET /wp-admin/post.php?post={id}&action=edit HTTP/1.1\r\n" \
+          "Host: {host}\r\n" \
+          "Cookie: {cookies}\r\n" \
+          "Connection: close\r\n" \
+          "\r\n"
 
-    response = b""
-    while True:
-        chunk = sock.recv(4096)
-        if not chunk:
-            break
-        response += chunk
+
+
+def uploadFile(url: str, user: str, password: str, uri: str):
+    url = urlparse(url)
+
+    image_name, file_content = getFileContent(uri)
+
+    cookies = getCookies("{url}/wp-login.php".format(url=url.geturl()), user, password)
+
+    _wpnonce = getWpnonce("{url}/wp-admin/media-new.php".format(url=url.geturl()), cookies)
+
+    boundary = "----WebKitFormBoundaryh3d42A0ad5Vv4VxY"
+
+    _body = "--{boundary}\r\n" \
+            "Content-Disposition: form-data; name=\"name\"\r\n" \
+            "\r\n" \
+            "{image_name}\r\n" \
+            "--{boundary}\r\n" \
+            "Content-Disposition: form-data; name=\"_wpnonce\"\r\n" \
+            "\r\n" \
+            "{_wpnonce}\r\n" \
+            "--{boundary}\r\n" \
+            "Content-Disposition: form-data; name=\"async-upload\"; filename=\"{image_name}\"\r\n" \
+            "Content-Type: image/jpge\r\n" \
+            "\r\n".format(boundary=boundary,
+                          image_name=image_name,
+                          _wpnonce=_wpnonce)
+
+    body = b"%s" \
+           b"%s\r\n" \
+           b"--%s\r\n" % (_body.encode(),
+                          file_content,
+                          boundary.encode())
+
+    _msg = "POST /wp-admin/async-upload.php HTTP/1.1\r\n" \
+           "Host: {host}\r\n" \
+           "Content-Length: {content_length}\r\n" \
+           "Content-Type: multipart/form-data; boundary={boundary}\r\n" \
+           "Cookie: {cookies}\r\n" \
+           "Connection: close\r\n" \
+           "\r\n".format(host=url.netloc,
+                         boundary=boundary,
+                         content_length=len(body),
+                         cookies=cookies)
+    msg = b"%s" \
+          b"%s" % (_msg.encode(),
+                   body)
+
+    sock = createSocket(url.hostname, url.port or 80)
+
+    response = sendTcpMsg(sock, msg)
 
     sock.close()
 
-    print(response)
+    header, body = parseTcpMsg(response.decode())
 
+    status_line = header.split("\r\n")[0]
+    status_code = status_line.split(" ")[1]
+
+    if status_code != "200":
+        return -1
+
+    print(body)
 
 if __name__ == '__main__':
     # print(getCookies("http://45.32.110.240/wp-login.php", "test", "test123QWE@AD"))
-    uploadFile("http://45.32.110.240/wp-admin/async-upload.php", "test", "test123QWE@AD", "./cat-6.jpg")
+    uploadFile("http://45.32.110.240/", "test", "test123QWE@AD", "okela-21.jpg")
+
+    # parse = argparse.ArgumentParser(description="Check login user and password")
+    # parse.add_argument("--url", help="URL")
+    # parse.add_argument("--user", help="User")
+    # parse.add_argument("--password", help="Password")
+    # parse.add_argument("--local-file", help="Path to file")
+    #
+    # args = parse.parse_args()
+    #
+    # url = args.url
+    # user = args.user
+    # password = args.password
+    # local_file = args.local_file
+    #
+    # uploadFile(url, user, password, local_file)

@@ -1,41 +1,62 @@
-import socket as sk
+import argparse
 from urllib.parse import urlparse
-from tcplib import parseTCPMsg
+
+from tcplib import createSocket
+from tcplib import sendTcpMsg
 
 
-def downloadMethod(url: str):
+def downloadMethod(url: str, path: str):
     url = urlparse(url)
-    sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    sock.connect((url.hostname, url.port or 80))
+
+    sock = createSocket(url.hostname, url.port or 80)
+
     msg = 'GET {path} HTTP/1.1\r\n' \
           'Host: {host}\r\n' \
           'Connection: close\r\n' \
           '\r\n' \
-        .format(path=url.path,
+        .format(path=path,
                 host=url.netloc)
 
-    sock.sendall(msg.encode())
+    response = sendTcpMsg(sock, msg.encode())
 
-    response = b''
-    while True:
-        chunk = sock.recv(4096)
-        if not chunk:
-            break
-        response += chunk
     sock.close()
 
-    return response.split(b"\r\n\r\n")[1]
+    return response
 
 
-def downloadImage(url:str):
-    image = downloadMethod(url)
+def downloadFile(url: str, path: str):
+    response = downloadMethod(url, path)
 
-    fileName = url.split("/")[-1]
-    file = open(fileName, "w+b")
+    header = response.split(b"\r\n\r\n")[0].decode()
+    image = response.split(b"\r\n\r\n")[1]
+
+    status_line = header.split("\r\n")[0]
+    status_code = status_line.split(" ")[1]
+
+    if status_code == "301":
+        return -1
+
+    file_name = path.split("/")[-1]
+    file = open(file_name, "w+b")
     file.write(image)
 
     file.close()
+    return len(image)
 
 
 if __name__ == '__main__':
-    downloadImage("http://45.32.110.240/wp-content/uploads/2020/09/okela-21.jpg")
+    parse = argparse.ArgumentParser(description="Download file from website")
+    parse.add_argument("--url", help="URL")
+    parse.add_argument("--remote-file", help="file path")
+
+    args = parse.parse_args()
+
+    url = args.url
+    path = args.remote_file
+
+    file_size = downloadFile(url, path)
+
+    if file_size == -1:
+        print("Download failed")
+    else:
+        print("Size of image is: {size}".format(size=file_size))

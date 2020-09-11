@@ -1,31 +1,28 @@
-import socket as sk
-from urllib.parse import urlparse
+import argparse
 import re
-from tcplib import parseTCPMsg
+from urllib.parse import urlparse
+
+from tcplib import createSocket
+from tcplib import parseTcpMsg
+from tcplib import sendTcpMsg
 
 
 def getMethod(url: str):
     url = urlparse(url)
-    sock = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    sock.connect((url.hostname, url.port or 80))
+    sock = createSocket(url.hostname, url.port or 80)
+
     msg = 'GET {path} HTTP/1.1\r\n' \
           'Host: {host}\r\n' \
           'Connection: close\r\n' \
           '\r\n' \
         .format(path=url.path or "/",
                 host=url.netloc)
-    # print(msg)
 
-    sock.sendall(msg.encode())
-    response = ""
-    while True:
-        chunk = sock.recv(4096)
-        if not chunk:
-            break
-        response += chunk.decode("utf-8")
+    response = sendTcpMsg(sock, msg.encode())
+
     sock.close()
 
-    return parseTCPMsg(response)
+    return parseTcpMsg(response.decode())
 
 
 def getTitle(source: str):
@@ -34,5 +31,12 @@ def getTitle(source: str):
 
 
 if __name__ == '__main__':
-    header, body = getMethod("http://45.32.110.240/")
+    parse = argparse.ArgumentParser(description="Get title from wp website")
+    parse.add_argument("--url", help="URL")
+
+    args = parse.parse_args()
+
+    url = args.url
+
+    header, body = getMethod(url)
     print(getTitle(body))
