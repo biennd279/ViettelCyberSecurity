@@ -2,9 +2,7 @@ import argparse
 import re
 from urllib.parse import urlparse
 
-from tcplib import createSocket
-from tcplib import parseTcpMsg
-from tcplib import sendTcpMsg
+from tcplib.tcplib import *
 
 
 def getMethod(url: str):

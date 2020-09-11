@@ -1,8 +1,7 @@
 import argparse
 from urllib.parse import urlparse
 
-from tcplib import createSocket
-from tcplib import sendTcpMsg
+from tcplib.tcplib import *
 
 
 def downloadMethod(url: str, path: str):

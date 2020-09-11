@@ -2,9 +2,7 @@ import argparse
 import re
 from urllib.parse import urlparse
 
-from tcplib import createSocket
-from tcplib import parseTcpMsg
-from tcplib import sendTcpMsg
+from tcplib.tcplib import *
 
 
 def getFileContent(uri: str):
@@ -48,7 +46,7 @@ def getCookies(url: str, user: str, password: str):
     cookies_regex = r"Set-Cookie: (.+?; )"
     cookies = set(re.findall(cookies_regex, header))
 
-    return ''.join(cookies)[0:-2]
+    return ''.join(cookies)[:]
 
 
 def getWpnonce(url: str, cookie: str):
@@ -73,17 +71,29 @@ def getWpnonce(url: str, cookie: str):
 
     return json.group(1)
 
+
 def getFileUploadUrl(id:int, url:str, cookies:str):
     url = urlparse(url)
 
-    socket = createSocket(url.hostname,url.port or 80)
+    sock = createSocket(url.hostname, url.port or 80)
 
     msg = "GET /wp-admin/post.php?post={id}&action=edit HTTP/1.1\r\n" \
           "Host: {host}\r\n" \
           "Cookie: {cookies}\r\n" \
           "Connection: close\r\n" \
-          "\r\n"
+          "\r\n".format(id=id,
+                        host=url.hostname,
+                        cookies=cookies)
 
+    response = sendTcpMsg(sock, msg.encode())
+
+    header, body = parseTcpMsg(response.decode())
+
+    url_regex = r"name=\"attachment_url\" id=\"attachment_url\" value=\"(.+?)\" \/>"
+
+    url = re.search(url_regex, body)
+
+    return url.group(1)
 
 
 def uploadFile(url: str, user: str, password: str, uri: str):
@@ -144,25 +154,27 @@ def uploadFile(url: str, user: str, password: str, uri: str):
     status_code = status_line.split(" ")[1]
 
     if status_code != "200":
-        return -1
+        print("Can not upload file!")
+    else:
+        url = getFileUploadUrl(body, url.geturl(), cookies)
+        print("Login Success. Upload file url: {url}".format(url=url))
 
-    print(body)
 
 if __name__ == '__main__':
     # print(getCookies("http://45.32.110.240/wp-login.php", "test", "test123QWE@AD"))
-    uploadFile("http://45.32.110.240/", "test", "test123QWE@AD", "okela-21.jpg")
+    # uploadFile("http://45.32.110.240/", "test", "test123QWE@AD", "okela-21.jpg")
 
-    # parse = argparse.ArgumentParser(description="Check login user and password")
-    # parse.add_argument("--url", help="URL")
-    # parse.add_argument("--user", help="User")
-    # parse.add_argument("--password", help="Password")
-    # parse.add_argument("--local-file", help="Path to file")
-    #
-    # args = parse.parse_args()
-    #
-    # url = args.url
-    # user = args.user
-    # password = args.password
-    # local_file = args.local_file
-    #
-    # uploadFile(url, user, password, local_file)
+    parse = argparse.ArgumentParser(description="Check login user and password")
+    parse.add_argument("--url", help="URL")
+    parse.add_argument("--user", help="User")
+    parse.add_argument("--password", help="Password")
+    parse.add_argument("--local-file", help="Path to file")
+
+    args = parse.parse_args()
+
+    url = args.url
+    user = args.user
+    password = args.password
+    local_file = args.local_file
+
+    uploadFile(url, user, password, local_file)
