@@ -1,5 +1,4 @@
-<?php session_start(); ?>
-    <!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
     <title>Student management system</title>

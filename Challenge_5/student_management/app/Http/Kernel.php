@@ -2,7 +2,10 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\TwoFaceVerify;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use PragmaRX\Google2FA\Google2FA;
+use PragmaRX\Google2FALaravel\Middleware;
 
 class Kernel extends HttpKernel
 {
@@ -62,5 +65,7 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+
+        '2fa' => \App\Http\Middleware\TwoFaceVerify::class,
     ];
 }

@@ -16,7 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::group([], function () {
     Route::get('/', function () {
         return view('welcome');
-    })->middleware('auth');
+    })->middleware(['auth', '2fa'])
+    ->name('index');
 
     Route::get('/login', [
         'uses' => 'App\Http\Controllers\LoginController@getLogin',
@@ -36,7 +37,7 @@ Route::group([], function () {
 
 
 
-Route::group(['prefix' => 'user', 'middleware' => 'auth'], function () {
+Route::group(['prefix' => 'user', 'middleware' => ['auth', '2fa']], function () {
     //View
     Route::get('', [
         'uses' => 'App\Http\Controllers\UserController@getIndex',
@@ -90,7 +91,7 @@ Route::group(['prefix' => 'user', 'middleware' => 'auth'], function () {
     ]);
 });
 
-Route::group(['prefix' => 'assignment', 'middleware' => 'auth'], function () {
+Route::group(['prefix' => 'assignment', 'middleware' => ['auth', '2fa']], function () {
     //Assigment
     Route::get('',[
         'uses' => 'App\Http\Controllers\AssignmentController@getIndex',
@@ -135,7 +136,7 @@ Route::group(['prefix' => 'assignment', 'middleware' => 'auth'], function () {
 });
 
 
-Route::group(['prefix' => 'challenge', 'middleware' => 'auth'], function () {
+Route::group(['prefix' => 'challenge', 'middleware' => ['auth', '2fa']], function () {
     //Challenge
     Route::get('', [
         'uses' => 'App\Http\Controllers\ChallengeController@getIndex',
@@ -164,7 +165,7 @@ Route::group(['prefix' => 'challenge', 'middleware' => 'auth'], function () {
 });
 
 
-Route::group(['prefix' => 'message', 'middleware' => 'auth'], function () {
+Route::group(['prefix' => 'message', 'middleware' => ['auth', '2fa']], function () {
 //Message
     Route::get('', [
         'uses' => 'App\Http\Controllers\MessageController@getIndex',
@@ -194,6 +195,29 @@ Route::group(['prefix' => 'message', 'middleware' => 'auth'], function () {
     Route::post('{id}/update', [
         'uses' => 'App\Http\Controllers\MessageController@postUpdateMessage',
         'as' => 'message.update'
+    ]);
+});
+
+Route::group(['prefix' => 'two_face_auths', 'middleware' => 'auth'], function () {
+    Route::get('/', [
+        'uses' => 'App\Http\Controllers\TwoFaceAuthsController@index',
+        'as' => '2fa.index',
+    ]);
+    Route::post('/enable', [
+        'uses' => 'App\Http\Controllers\TwoFaceAuthsController@enable',
+        'as' => '2fa.enable',
+    ]);
+});
+
+Route::group(['prefix' => 'two_face', 'middleware' => 'auth'], function () {
+    Route::get('/', [
+        'uses' => 'App\Http\Controllers\VerifyTwoFaceAuthController@index',
+        'as' => '2fa.verify.index'
+    ]);
+
+    Route::post('/verify', [
+       'uses' => 'App\Http\Controllers\VerifyTwoFaceAuthController@verify',
+        'as' => '2fa.verify'
     ]);
 });
 

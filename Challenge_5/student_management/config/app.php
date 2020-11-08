@@ -229,6 +229,7 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
 
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
+        'Google2FA' => PragmaRX\Google2FALaravel\Facade::class,
     ],
 
 ];

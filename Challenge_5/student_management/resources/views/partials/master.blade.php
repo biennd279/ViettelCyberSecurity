@@ -55,6 +55,8 @@
                    class="list-group-item list-group-item-action nav-button">Challenge</a>
                 <a id="profile" href="{{ route('user.edit', ['id' => \Auth::id()]) }}"
                    class="list-group-item list-group-item-action nav-button">Profile</a>
+                <a id="2fa-setting" href="{{ route('2fa.index') }}"
+                   class="list-group-item list-group-item-action nav-button">2FA Setting</a>
             </div>
         </nav>
 

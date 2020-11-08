@@ -9,7 +9,7 @@ def send_login(username, password):
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
-    cookies = {'PHPSESSID': 'c75f26a7ec74f3dc9d860ee27d9e7835'}
+    cookies = {'PHPSESSID': '5f5e839987072a9d4fbe8e08cd034d1f'}
 
     data = {'username': username,
             'password': password}
@@ -32,7 +32,7 @@ def send_verify_code(code):
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
-    cookies = {'PHPSESSID': '0ce8cdb18879bb5496c22012ede06d39'}
+    cookies = {'PHPSESSID': '5f5e839987072a9d4fbe8e08cd034d1f'}
 
     data = {'code': code}
 
@@ -52,7 +52,7 @@ def get_item(item_id):
 
     headers = {}
 
-    cookies = {'PHPSESSID': 'c75f26a7ec74f3dc9d860ee27d9e7835'}
+    cookies = {'PHPSESSID': '459c190e6351d22bd129ca1535f724cb'}
 
     params = {'id': item_id}
 
@@ -85,12 +85,4 @@ def brute_force_code():
 
 
 if __name__ == '__main__':
-    # send_login('username', 'password')
-    # brute_force()
-    # brute_force_item()
-    # send_verify_code(8581)
-    brute_force_code()
-    # send_login('bien', 'test')
-    # brute_force()
-
-    # send_verify_code(3758)
+    brute_force_item()
