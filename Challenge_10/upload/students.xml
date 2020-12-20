@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Students>
+    <Student>
+        <Name>
+            Bien
+        </Name>
+        <Year>
+            2000
+        </Year>
+        <School>
+            UET
+        </School>
+    </Student>
+    <Student>
+        <Name>
+            Nguyen Dinh Bien 1
+        </Name>
+        <Year>
+            2001
+        </Year>
+        <School>
+            UET's
+        </School>
+    </Student>
+    <Student>
+        <Name>
+            Nguyen Dinh Bien 2
+        </Name>
+        <Year>
+            2002
+        </Year>
+        <School>
+            UET'ss
+        </School>
+    </Student>
+</Students>
