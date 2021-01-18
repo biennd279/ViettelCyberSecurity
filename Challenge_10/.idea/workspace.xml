@@ -1,20 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="27336f46-d1b6-461e-89b4-d7a76e9960ed" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/index.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/index_fixed.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/students.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/students_hack.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/upload.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Challenge_9/hello_world.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Challenge_9/index.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Challenge_9/index_upload.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Challenge_9/page/about.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Challenge_9/page/upload.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../Challenge_9/upload_fixed.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Challenge_6/pythonProject/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../Challenge_6/pythonProject/main.py" afterDir="false" />
-    </list>
+    <list default="true" id="27336f46-d1b6-461e-89b4-d7a76e9960ed" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,7 +48,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1608478380479</updated>
-      <workItem from="1608478381819" duration="6733000" />
+      <workItem from="1608478381819" duration="7115000" />
     </task>
     <servers />
   </component>
